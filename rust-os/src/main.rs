@@ -9,17 +9,26 @@ fn panic(_info: &PanicInfo) -> ! {
 }
 
 #[no_mangle]
-extern "C" fn _start() -> u32 {
-    let code: u32 = 11;
+extern "C" fn _start() {
+    let text: &[u8] = b"Hello, world!\n";
+
+    let code: u32 = 64;
     let mut ret: u32 = 0;
     unsafe {
         core::arch::asm!(
             "ecall",
-            inlateout("x10") code => ret,
+            inlateout("x10") 1 => ret,
+            in("x11") text.as_ptr() as u32,
+            in("x12") text.len() as u32,
+            in("x17") code,
+        );
+
+        core::arch::asm!(
+            "ecall",
+            inlateout("x10") 9 => ret,
             in("x11") 0,
             in("x12") 0,
             in("x17") 93,
         );
     }
-    ret
 }
